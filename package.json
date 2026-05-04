@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "kill": "lsof -ti tcp:3000 | xargs kill -9 2>/dev/null; lsof -ti tcp:3001 | xargs kill -9 2>/dev/null; echo 'Ports cleared'",
+    "dev": "npm run kill && concurrently \"serve ./codes --cors -p 3000\" \"local-ssl-proxy --source 3001 --target 3000 --cert localhost.pem --key localhost-key.pem\"",
     "build": "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js",
     "watch": "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js --watch"
   },
@@ -20,6 +22,9 @@
   },
   "homepage": "https://github.com/EverythingDesign/Turno#readme",
   "devDependencies": {
-    "esbuild": "^0.28.0"
+    "concurrently": "^9.0.0",
+    "esbuild": "^0.28.0",
+    "local-ssl-proxy": "^2.0.0",
+    "serve": "^14.0.0"
   }
 }
