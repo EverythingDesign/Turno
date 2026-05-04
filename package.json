@@ -1,0 +1,25 @@
+{
+  "name": "turno",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js",
+    "watch": "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EverythingDesign/Turno.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/EverythingDesign/Turno/issues"
+  },
+  "homepage": "https://github.com/EverythingDesign/Turno#readme",
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
