@@ -28,12 +28,22 @@ console.log("fcghjvgb");
     const menu = document.querySelector(".side-nav");
     hamBtn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevents the document click listener below from firing immediately
-        menu.classList.toggle("is-active"); // Note: removed the '.' before is-active
+        menu.classList.toggle("is-active");
+        
+        // Stop/start lenis scroll depending on menu state
+        if (typeof lenis !== "undefined") {
+            if (menu.classList.contains("is-active")) {
+                lenis.stop();
+            } else {
+                lenis.start();
+            }
+        }
     });
-    // Close dropdown when clicking anywhere outside
+    // Close dropdown when clicking on close buttons
     closeHamBtns.forEach(closeHamBtn => {
         closeHamBtn.addEventListener("click", (e) => {
             menu.classList.remove("is-active");
+            if (typeof lenis !== "undefined") lenis.start();
         })
     })
 })();
