@@ -37,3 +37,43 @@ console.log("fcghjvgb");
         })
     })
 })();
+
+// --- Navbar Hide/Show on Scroll ---
+(function () {
+    const nav = document.querySelector(".nav_component");
+    if (!nav) return;
+
+    // Make sure it transitions smoothly
+    nav.style.transition = "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)";
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener("scroll", () => {
+        const currentScrollY = window.scrollY;
+
+        // 1. Safari iOS Rubber-banding at the very top (pulling down past 0)
+        // Always force the navbar to show when at the top
+        if (currentScrollY <= 0) {
+            nav.style.transform = "translateY(0%)";
+            lastScrollY = currentScrollY;
+            return;
+        }
+
+        // 2. Safari iOS Rubber-banding at the very bottom (pulling up past max)
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        if (currentScrollY >= maxScroll) {
+            lastScrollY = currentScrollY;
+            return;
+        }
+
+        // 3. Scrolling DOWN: Hide
+        if (currentScrollY > lastScrollY + 5) { // +5 adds a tiny threshold to prevent ultra-sensitive hiding
+            nav.style.transform = "translateY(-100%)";
+            lastScrollY = currentScrollY;
+        } 
+        // 4. Scrolling UP: Show
+        else if (currentScrollY < lastScrollY - 5) {
+            nav.style.transform = "translateY(0%)";
+            lastScrollY = currentScrollY;
+        }
+    });
+})();
