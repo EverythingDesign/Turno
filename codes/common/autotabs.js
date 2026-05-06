@@ -50,7 +50,11 @@ class AutoTab {
             if (line) gsap.set(line, { width: '0%' });
         });
 
-        if (this.duration <= 0) return;
+        if (this.duration <= 0 || window.innerWidth <= 1024) {
+            const activeLine = this.lines[index];
+            if (activeLine) gsap.set(activeLine, { width: '100%' });
+            return;
+        }
 
         // The progress tween IS the timer: when its width reaches 100%,
         // onComplete advances to the next tab. If a tab has no line,

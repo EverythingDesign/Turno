@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ratio: '16:9',
     });
 
+
     // Make it accessible globally for your custom buttons
     window.heroPlyr = player;
     if (window.innerWidth >= 1025) {
