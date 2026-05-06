@@ -25,10 +25,23 @@ class AutoTab {
         this.duration = duration;
         this.activeIndex = 0;
         this.tween = null;
-        this.paused = false;
+        this.paused = true; // Start paused, observer will resume it
 
         this.bindEvents(tabComponent);
         this.activate(0);
+
+        // Intersection Observer to only play when in view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    this.resume();
+                } else {
+                    this.pause();
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        observer.observe(section);
     }
 
     activate(index) {
