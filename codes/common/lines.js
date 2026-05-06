@@ -1,13 +1,21 @@
 
 (function () {
     function render(el) {
-        const count = parseInt(el.getAttribute('diagonal-line-hor'), 10);
-        if (!count || count < 1) return;
-
         const h = el.offsetHeight || 40;
         const angleDeg = 45;                                 // line angle from horizontal
         const slant = h / Math.tan(angleDeg * Math.PI / 180); // horizontal run of one line
         const gap = slant * 0.9;                            // spacing between line starts (tweak: 0.4 tighter, 1.2 looser)
+        
+        let count = parseInt(el.getAttribute('diagonal-line-hor'), 10);
+        const isVary = el.getAttribute('vary') === 'true';
+
+        if (isVary) {
+            const elWidth = el.offsetWidth || 100;
+            count = Math.max(1, Math.ceil((elWidth - slant) / gap) + 1);
+        }
+
+        if (!count || count < 1) return;
+
         const totalW = slant + gap * (count - 1);
 
         let lines = '';
