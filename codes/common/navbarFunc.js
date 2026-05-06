@@ -19,6 +19,13 @@ console.log("fcghjvgb");
         }
     });
 
+    // Close dropdown on scroll
+    window.addEventListener("scroll", () => {
+        if (servicesDd.classList.contains("is-active")) {
+            servicesDd.classList.remove("is-active");
+        }
+    }, { passive: true });
+
 })();
 
 
