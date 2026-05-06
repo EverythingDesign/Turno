@@ -11,12 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Make it accessible globally for your custom buttons
     window.heroPlyr = player;
+    if (window.innerWidth >= 1025) {
+        // Auto-play when popup opens (clicking "Play Full Video" cursor on hero)
+        document.querySelector('#home-hero')?.addEventListener('click', () => {
+            document.querySelector('.video-popup')?.classList.add('is-active');
+            setTimeout(() => player.play(), 50);
+        });
 
-    // Auto-play when popup opens (clicking "Play Full Video" cursor on hero)
-    document.querySelector('#home-hero')?.addEventListener('click', () => {
-        document.querySelector('.video-popup')?.classList.add('is-active');
-        setTimeout(() => player.play(), 50);
-    });
+        // Pause on Spacebar key too
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') player.pause();
+        });
+    } else {
+        const heroThumbnail = document.querySelector("[home-hero-view-video]");
+        heroThumbnail?.addEventListener("click", () => {
+            document.querySelector('.video-popup')?.classList.add('is-active');
+            setTimeout(() => player.play(), 50);
+        });
+    }
+
     const closeVidBtns = document.querySelectorAll("[close-video-popup]");
 
     // Pause + reset when close button clicked
@@ -26,11 +39,5 @@ document.addEventListener('DOMContentLoaded', () => {
             player.currentTime = 0;
             document.querySelector('.video-popup')?.classList.remove('is-active');
         });
-    })
-
-
-    // Pause on Escape key too
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') player.pause();
     });
 });
