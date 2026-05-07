@@ -64,7 +64,6 @@ gsap.registerPlugin(ScrollTrigger);
 })();
 
 (function () {
-    // console.log("c fg")
     if (!window.matchMedia('(min-width: 1025px)').matches) return;
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
 

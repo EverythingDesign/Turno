@@ -24,11 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.code === 'Space') player.pause();
         });
     } else {
-        const heroThumbnail = document.querySelector("[home-hero-view-video]");
-        heroThumbnail?.addEventListener("click", () => {
-            document.querySelector('.video-popup')?.classList.add('is-active');
-            setTimeout(() => player.play(), 50);
-        });
+        const heroThumbnails = document.querySelectorAll("[home-hero-view-video]");
+        heroThumbnails.forEach((heroThumbnail) => {
+            heroThumbnail?.addEventListener("click", () => {
+                const videoPopup = document.querySelector('.video-popup');
+                if (!videoPopup.classList.contains("is-active")) {
+                    videoPopup.classList.add('is-active');
+                }
+                setTimeout(() => player.play(), 50);
+            });
+        })
+
     }
 
     const closeVidBtns = document.querySelectorAll("[close-video-popup]");
