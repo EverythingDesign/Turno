@@ -12,30 +12,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Make it accessible globally for your custom buttons
     window.heroPlyr = player;
-    if (window.innerWidth >= 1025) {
-        // Auto-play when popup opens (clicking "Play Full Video" cursor on hero)
-        document.querySelector('#home-hero')?.addEventListener('click', () => {
-            document.querySelector('.video-popup')?.classList.add('is-active');
+    // if (window.innerWidth >= 1025) {
+    // Auto-play when popup opens (clicking "Play Full Video" cursor on hero)
+    document.querySelector('#home-hero')?.addEventListener('click', () => {
+        document.querySelector('.video-popup')?.classList.add('is-active');
+        setTimeout(() => player.play(), 50);
+    });
+
+    // Pause on Spacebar key too
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') player.pause();
+    });
+    // } else {
+    const heroThumbnails = document.querySelectorAll("[home-hero-view-video]");
+    heroThumbnails.forEach((heroThumbnail) => {
+        heroThumbnail?.addEventListener("click", () => {
+            const videoPopup = document.querySelector('.video-popup');
+            if (!videoPopup.classList.contains("is-active")) {
+                videoPopup.classList.add('is-active');
+            }
             setTimeout(() => player.play(), 50);
         });
+    })
 
-        // Pause on Spacebar key too
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') player.pause();
-        });
-    } else {
-        const heroThumbnails = document.querySelectorAll("[home-hero-view-video]");
-        heroThumbnails.forEach((heroThumbnail) => {
-            heroThumbnail?.addEventListener("click", () => {
-                const videoPopup = document.querySelector('.video-popup');
-                if (!videoPopup.classList.contains("is-active")) {
-                    videoPopup.classList.add('is-active');
-                }
-                setTimeout(() => player.play(), 50);
-            });
-        })
-
-    }
+    // }
 
     const closeVidBtns = document.querySelectorAll("[close-video-popup]");
 
