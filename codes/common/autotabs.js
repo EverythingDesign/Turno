@@ -5,8 +5,9 @@ class AutoTab {
     /**
      * @param {string} sectionId  ID of the section that contains a .tab-component
      * @param {number} duration   Time per tab, in milliseconds
+     * @param {string} hoverSelector Optional specific element selector to pause on hover
      */
-    constructor(sectionId, duration = 4000) {
+    constructor(sectionId, duration = 4000, hoverSelector = null) {
         const section = document.getElementById(sectionId);
         if (!section) return;
 
@@ -27,7 +28,14 @@ class AutoTab {
         this.tween = null;
         this.paused = true; // Start paused, observer will resume it
 
-        this.bindEvents(tabComponent);
+        let hoverTargets = [tabComponent];
+        if (hoverSelector) {
+            let elements = section.querySelectorAll(hoverSelector);
+            if (!elements.length) elements = document.querySelectorAll(hoverSelector);
+            if (elements.length) hoverTargets = Array.from(elements);
+        }
+
+        this.bindEvents(hoverTargets);
         this.activate(0);
 
         // Intersection Observer to only play when in view
@@ -101,15 +109,17 @@ class AutoTab {
         if (this.tween) this.tween.resume();
     }
 
-    bindEvents(hoverTarget) {
+    bindEvents(hoverTargets) {
         // Click → jump to that tab and restart the progress from 0%
         this.tabs.forEach((tab, i) => {
             tab.addEventListener('click', () => this.activate(i));
         });
 
         // Pause auto-rotate (and the progress line) while hovering
-        hoverTarget.addEventListener('mouseenter', () => this.pause());
-        hoverTarget.addEventListener('mouseleave', () => this.resume());
+        hoverTargets.forEach(target => {
+            target.addEventListener('mouseenter', () => this.pause());
+            target.addEventListener('mouseleave', () => this.resume());
+        });
     }
 }
 
