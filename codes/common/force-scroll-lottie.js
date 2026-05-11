@@ -270,17 +270,12 @@ gsap.registerPlugin(ScrollTrigger);
         };
 
         // Prime the first wrap
+        // As requested: the first item does not have any animation and is done by default.
         if (wraps[0]) {
-            // First, immediately hide the heading so it's invisible before we scroll to it
-            hideHeading(wraps[0]);
-
-            // Use the root section as the trigger because sticky elements mess up scroll calculations
-            ScrollTrigger.create({
-                trigger: root,
-                start: 'top 60%', // Triggers when the top of the battery section reaches 60% of the screen
-                onEnter: () => playColorIn(wraps[0]),
-                onLeaveBack: () => hideHeading(wraps[0])
-            });
+            const heading = wraps[0].querySelector('.u-heading');
+            const words = wraps[0].querySelectorAll('.headWord');
+            if (heading) gsap.set(heading, { opacity: 1 });
+            if (words.length) gsap.set(words, { opacity: 1, color: endColor });
         }
 
         triggers.forEach((trigger, i) => {
@@ -311,7 +306,7 @@ gsap.registerPlugin(ScrollTrigger);
     // before any spacer-trigger fires. RANGES has one entry per
     // [trigger-group="battery"] spacer, in scroll order.
     // The Lottie sits paused on the last played frame between ranges.
-    const LOTTIE_INTRO = [0, 1]; // section in view â†’ 0sâ€“1s
+    const LOTTIE_INTRO = [0.8, 1]; // section in view â†’ 0sâ€“1s
     const LOTTIE_RANGES = [
         [1, 4], // Trigger 1 (2nd tab) â†’ 2sâ€“4s
         [4, 11], // Trigger 2 (3rd tab) â†’ 5sâ€“11s
