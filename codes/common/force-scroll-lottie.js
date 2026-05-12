@@ -1,6 +1,5 @@
 gsap.registerPlugin(ScrollTrigger);
 (function () {
-    // console.log("fghjklm;,")
     if (window.matchMedia('(min-width: 1025px)').matches) return;
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
     if (typeof lottie === 'undefined') return;
@@ -41,6 +40,7 @@ gsap.registerPlugin(ScrollTrigger);
         });
 
         anim.addEventListener('DOMLoaded', () => {
+            anim.setSpeed(3); // 3x speed for mobile
             const total = anim.totalFrames - 1;
             const fps = anim.frameRate || 60;
             const toFrame = (sec) => Math.min(sec * fps, total);
