@@ -306,9 +306,8 @@ gsap.registerPlugin(ScrollTrigger);
     // before any spacer-trigger fires. RANGES has one entry per
     // [trigger-group="battery"] spacer, in scroll order.
     // The Lottie sits paused on the last played frame between ranges.
-    const LOTTIE_INTRO = [0.8, 1]; // section in view â†’ 0sâ€“1s
+    const LOTTIE_INTRO = [1, 4]; // section in view â†’ 0sâ€“1s
     const LOTTIE_RANGES = [
-        [1, 4], // Trigger 1 (2nd tab) â†’ 2sâ€“4s
         [4, 11], // Trigger 2 (3rd tab) â†’ 5sâ€“11s
     ];
 
