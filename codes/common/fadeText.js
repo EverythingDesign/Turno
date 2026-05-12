@@ -4,7 +4,8 @@ function createTextFade(
     startColorInp,
     endColorInp,
     triggerStart = "top bottom",
-    triggerEnd = "bottom bottom"
+    triggerEnd = "bottom bottom",
+    highlightSelector = null
 ) {
     // let startColor = "#ff942d";
     // let endColor = "#ffffff";
@@ -19,6 +20,20 @@ function createTextFade(
             start: triggerStart,
             end: triggerEnd,
             scrub: true,
+            onLeave: () => {
+                // Adds 'active' class when the scroll animation is finished (if a selector is provided)
+                if (highlightSelector) {
+                    const highlightElements = document.querySelectorAll(highlightSelector);
+                    highlightElements.forEach(el => el.classList.add('is-active'));
+                }
+            },
+            onEnterBack: () => {
+                // Removes it if the user scrolls back up (if a selector is provided)
+                if (highlightSelector) {
+                    const highlightElements = document.querySelectorAll(highlightSelector);
+                    highlightElements.forEach(el => el.classList.remove('is-active'));
+                }
+            }
         },
     });
 
@@ -39,3 +54,7 @@ function createTextFade(
         0.3
     );
 }
+
+// document.addEventListener('DOMContentLoaded', (event) => {
+//     createTextFade('[fade-text-split] .fade-text-animate', '#backed-trigger', '#e9511a', '#1f1d1e', 'top bottom', 'bottom bottom', '.highlight-text');
+// });
