@@ -306,9 +306,9 @@ gsap.registerPlugin(ScrollTrigger);
     // before any spacer-trigger fires. RANGES has one entry per
     // [trigger-group="battery"] spacer, in scroll order.
     // The Lottie sits paused on the last played frame between ranges.
-    const LOTTIE_INTRO = [1, 4]; // section in view â†’ 0sâ€“1s
+    const LOTTIE_INTRO = [1, 5]; // section in view â†’ 0sâ€“1s
     const LOTTIE_RANGES = [
-        [4, 11], // Trigger 2 (3rd tab) â†’ 5sâ€“11s
+        [5, 11], // Trigger 2 (3rd tab) â†’ 5sâ€“11s
     ];
 
     function initLottieScroll() {
@@ -328,29 +328,23 @@ gsap.registerPlugin(ScrollTrigger);
         });
 
         anim.addEventListener('DOMLoaded', () => {
+            anim.setSpeed(3); // Adjust this number to make it faster or slower (1 = normal speed, 2 = twice as fast, 3 = three times as fast)
+
             const total = anim.totalFrames - 1;
             const fps = anim.frameRate || 60;
             const triggers = document.querySelectorAll(TRIGGER_SELECTOR);
             // seconds â†’ frame index (clamped to total)
             const resolve = (sec) => Math.min(sec * fps, total);
 
-            const scrub = (trigger, range, scrollConfig) => {
+            const playRange = (trigger, range, scrollConfig) => {
                 const startFrame = resolve(range[0]);
                 const endFrame = resolve(range[1]);
-                const frame = { v: startFrame };
 
-                gsap.to(frame, {
-                    v: endFrame,
-                    ease: 'none',
-                    scrollTrigger: Object.assign(
-                        {
-                            trigger: trigger,
-                            scrub: 0.5,
-                        },
-                        scrollConfig,
-                    ),
-                    onUpdate: () => anim.goToAndStop(frame.v, true),
-                });
+                ScrollTrigger.create(Object.assign({
+                    trigger: trigger,
+                    onEnter: () => anim.playSegments([startFrame, endFrame], true),
+                    onLeaveBack: () => anim.playSegments([endFrame, startFrame], true),
+                }, scrollConfig));
             };
 
             // Park on the intro's start frame
@@ -359,7 +353,7 @@ gsap.registerPlugin(ScrollTrigger);
             // Intro: from when #battery enters the viewport until it pins.
             // The spacer-triggers sit *after* the sticky content, so this
             // window completes before LOTTIE_RANGES[0] begins.
-            scrub(root, LOTTIE_INTRO, {
+            playRange(root, LOTTIE_INTRO, {
                 start: 'top center',
                 end: 'top top',
             });
@@ -368,7 +362,7 @@ gsap.registerPlugin(ScrollTrigger);
             triggers.forEach((trigger, i) => {
                 const range = LOTTIE_RANGES[i];
                 if (!range) return;
-                scrub(trigger, range, {
+                playRange(trigger, range, {
                     start: 'top 80%',
                     end: 'top 40%',
                 });
