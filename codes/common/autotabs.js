@@ -1,5 +1,4 @@
 /**** AUTO TAB COMPONENT ****/
-/**** AUTO TAB COMPONENT ****/
 
 class AutoTab {
     /**
@@ -8,6 +7,11 @@ class AutoTab {
      * @param {string} hoverSelector Optional specific element selector to pause on hover
      */
     constructor(sectionId, duration = 4000, hoverSelector = null) {
+        if (window.innerWidth <= 991) {
+            this.initMobile(sectionId, duration, hoverSelector);
+            return;
+        }
+
         const section = document.getElementById(sectionId);
         if (!section) return;
 
@@ -48,7 +52,7 @@ class AutoTab {
                 }
             });
         }, { threshold: 0.1 });
-        
+
         observer.observe(section);
     }
 
@@ -71,7 +75,7 @@ class AutoTab {
             if (line) gsap.set(line, { width: '0%' });
         });
 
-        if (this.duration <= 0 || window.innerWidth <= 1024) {
+        if (this.duration <= 0 || window.innerWidth <= 991) {
             const activeLine = this.lines[index];
             if (activeLine) gsap.set(activeLine, { width: '100%' });
             return;
@@ -119,6 +123,53 @@ class AutoTab {
         hoverTargets.forEach(target => {
             target.addEventListener('mouseenter', () => this.pause());
             target.addEventListener('mouseleave', () => this.resume());
+        });
+    }
+
+    initMobile(sectionId, duration, hoverSelector) {
+        const section = document.getElementById(sectionId);
+        if (!section) return;
+
+        console.log('initializing mobile');
+
+        const tabComponent = section.querySelector('.tab-component');
+        if (!tabComponent) return;
+
+        const tabs = Array.from(tabComponent.querySelectorAll('.tab-btn'));
+        const contentWrap = tabComponent.querySelector('.tab-component-content_wrap');
+        const contents = contentWrap ? Array.from(contentWrap.children) : [];
+
+        tabs.forEach((tab, index) => {
+            const ddContent = tab.querySelector('.tab_dd-content');
+            const panel = contents[index];
+
+            if (ddContent && panel) {
+                // Append the corresponding panel inside the dropdown content
+                ddContent.appendChild(panel);
+            }
+
+            // Accordion interaction
+            const btnWrap = tab.querySelector('.tab_btn_wrap');
+            if (btnWrap) {
+                btnWrap.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const isActive = tab.classList.contains('is-active');
+
+                    // Close all tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('is-active');
+                        const dd = t.querySelector('.tab_dd-component');
+                        if (dd) dd.classList.remove('is-active');
+                    });
+
+                    // Open the clicked one if it was previously closed
+                    if (!isActive) {
+                        tab.classList.add('is-active');
+                        const dd = tab.querySelector('.tab_dd-component');
+                        if (dd) dd.classList.add('is-active');
+                    }
+                });
+            }
         });
     }
 }

@@ -6,8 +6,8 @@
   "scripts": {
     "kill": "lsof -ti tcp:3000 | xargs kill -9 2>/dev/null; lsof -ti tcp:3001 | xargs kill -9 2>/dev/null; echo 'Ports cleared'",
     "dev": "npm run kill && concurrently \"serve ./codes --cors -p 3000\" \"local-ssl-proxy --source 3001 --target 3000 --cert localhost.pem --key localhost-key.pem\"",
-    "build": "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js",
-    "watch": "esbuild src/main.js --bundle --minify --outfile=dist/main.min.js --watch"
+    "build": "esbuild codes/**/*.js --minify --outdir=dist",
+    "watch": "esbuild codes/**/*.js --minify --outdir=dist --watch"
   },
   "repository": {
     "type": "git",
