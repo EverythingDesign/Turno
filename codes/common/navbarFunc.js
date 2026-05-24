@@ -1,5 +1,4 @@
 /*** navbar open and close + on scroll transform ***/
-console.log("fcghjvgb");
 
 (function () {
     if (window.innerWidth > 1025) return;
@@ -36,7 +35,7 @@ console.log("fcghjvgb");
     hamBtn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevents the document click listener below from firing immediately
         menu.classList.toggle("is-active");
-        
+
         // Stop/start lenis scroll depending on menu state
         if (typeof lenis !== "undefined") {
             if (menu.classList.contains("is-active")) {
@@ -86,7 +85,7 @@ console.log("fcghjvgb");
         if (currentScrollY > lastScrollY + 5) { // +5 adds a tiny threshold to prevent ultra-sensitive hiding
             nav.style.transform = "translateY(-100%)";
             lastScrollY = currentScrollY;
-        } 
+        }
         // 4. Scrolling UP: Show
         else if (currentScrollY < lastScrollY - 5) {
             nav.style.transform = "translateY(0%)";

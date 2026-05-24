@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("dsgjsnk")
     const section = document.querySelector('#home-hero');
     const bounds = section?.querySelector('.cursor-bounds');
     const wrap = bounds?.querySelector('.cursor_wrap');
