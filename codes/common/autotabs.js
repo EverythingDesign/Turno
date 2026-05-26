@@ -40,7 +40,11 @@ class AutoTab {
         }
 
         this.bindEvents(hoverTargets);
-        this.activate(0);
+
+        // Honor a pre-set .is-active on a tab button (set in Webflow Designer).
+        // Falls back to the first tab if none is marked.
+        const preActive = this.tabs.findIndex(t => t.classList.contains('is-active'));
+        this.activate(preActive >= 0 ? preActive : 0);
 
         // Intersection Observer to only play when in view
         const observer = new IntersectionObserver((entries) => {
@@ -146,6 +150,12 @@ class AutoTab {
             if (ddContent && panel) {
                 // Append the corresponding panel inside the dropdown content
                 ddContent.appendChild(panel);
+            }
+
+            // If the tab was pre-marked is-active in Webflow, open its dropdown too
+            if (tab.classList.contains('is-active')) {
+                const dd = tab.querySelector('.tab_dd-component');
+                if (dd) dd.classList.add('is-active');
             }
 
             // Accordion interaction
