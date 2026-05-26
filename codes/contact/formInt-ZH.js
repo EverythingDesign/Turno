@@ -35,7 +35,7 @@
 
         return {
             // Required Zoho fields
-            "Last Name": fullName,
+            "Full Name": fullName,
             "Mobile": get(form, "full_phone"),
             "Email": get(form, "Email Address"),
             "Company": get(form, "Company") || "NA",
