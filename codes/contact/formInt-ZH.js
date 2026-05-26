@@ -45,7 +45,7 @@
             "LEADCF7": get(form, "establishment type"),
             "LEADCF37": SOLAR_MAP[get(form, "solar installation")] || "",
             "LEADCF102": get(form, "dg installation") === "Yes" ? "Yes" : "No",
-            "Description": get(form, "Message"),
+            "Message": get(form, "Message"),
 
             // Lead source + tracking
             "Lead Source": "Website",
