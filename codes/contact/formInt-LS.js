@@ -118,7 +118,7 @@
                 });
                 if (!res.ok) throw new Error("API " + res.status);
 
-                console.log("[Leadqure] Lead submitted successfully", { formId: form.id, phone: payload.phone });
+                console.log("[Leadqure] Lead submitted successfully", { formId: form.id, payload });
 
                 form.style.display = "none";
                 if (success) success.style.display = "block";
