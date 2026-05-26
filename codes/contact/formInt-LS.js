@@ -1,5 +1,5 @@
 (function () {
-    const LEADQURE_URL = "https://non-prod-backend.turnocloud.com/leads/website";
+    const LEADQURE_URL = "https://api.turnoclub.com/leads/website";
     // Switch to https://api.turnoclub.com/leads/website on production
 
     // Capture UTM params once on page load and stash for the submit
