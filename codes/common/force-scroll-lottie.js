@@ -249,7 +249,7 @@ gsap.registerPlugin(ScrollTrigger);
                         stagger: 0.05,
                         ease: 'power2.inOut',
                     },
-                    0.3,
+                    '+=0.05',
                 );
 
             activeTimelines.set(wrap, tl);
@@ -306,9 +306,9 @@ gsap.registerPlugin(ScrollTrigger);
     // before any spacer-trigger fires. RANGES has one entry per
     // [trigger-group="battery"] spacer, in scroll order.
     // The Lottie sits paused on the last played frame between ranges.
-    const LOTTIE_INTRO = [1, 5]; // section in view â†’ 0sâ€“1s
+    const LOTTIE_INTRO = [1, 5]; // section in view â†’ 1sâ€“5s
     const LOTTIE_RANGES = [
-        [5, 11], // Trigger 2 (3rd tab) â†’ 5sâ€“11s
+        [5, 11.2], // Trigger 1 → 5s–11.2s (zoom-out null starts at 11.27s / frame 338)
     ];
 
     function initLottieScroll() {
@@ -336,14 +336,18 @@ gsap.registerPlugin(ScrollTrigger);
             // seconds â†’ frame index (clamped to total)
             const resolve = (sec) => Math.min(sec * fps, total);
 
-            const playRange = (trigger, range, scrollConfig) => {
+            const playRange = (trigger, range, scrollConfig, opts = {}) => {
                 const startFrame = resolve(range[0]);
                 const endFrame = resolve(range[1]);
 
                 ScrollTrigger.create(Object.assign({
                     trigger: trigger,
                     onEnter: () => anim.playSegments([startFrame, endFrame], true),
-                    onLeaveBack: () => anim.playSegments([endFrame, startFrame], true),
+                    // Only reverse if explicitly requested (intro shouldn't
+                    // interrupt the main range mid-play)
+                    ...(opts.reverseOnLeaveBack && {
+                        onLeaveBack: () => anim.playSegments([endFrame, startFrame], true),
+                    }),
                 }, scrollConfig));
             };
 
@@ -353,10 +357,12 @@ gsap.registerPlugin(ScrollTrigger);
             // Intro: from when #battery enters the viewport until it pins.
             // The spacer-triggers sit *after* the sticky content, so this
             // window completes before LOTTIE_RANGES[0] begins.
+            // No reverseOnLeaveBack here — the intro reversing would
+            // force-interrupt the main [5→end] range if the user scrolls up.
             playRange(root, LOTTIE_INTRO, {
                 start: 'top center',
                 end: 'top top',
-            });
+            }, { reverseOnLeaveBack: false });
 
             // Per-spacer ranges
             triggers.forEach((trigger, i) => {
@@ -365,7 +371,7 @@ gsap.registerPlugin(ScrollTrigger);
                 playRange(trigger, range, {
                     start: 'top 80%',
                     end: 'top 40%',
-                });
+                }, { reverseOnLeaveBack: true });
             });
         });
     }
