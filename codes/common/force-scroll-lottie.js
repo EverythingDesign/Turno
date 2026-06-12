@@ -6,16 +6,18 @@ gsap.registerPlugin(ScrollTrigger);
 
     gsap.registerPlugin(ScrollTrigger);
 
-    const LOTTIE_GROUP_SELECTOR = `[lottie-group="battery"]`;
-    const LOTTIE_PATH = 'https://cdn.prod.website-files.com/69f0584be4d9dcdc9451abc0/69f445228ba6615487b20bb5_Battery-v1.json';
+    // Group selector: matches any element with a [lottie-group] attribute.
+    // The specific group name and the animation path are read from the element itself.
+    const LOTTIE_GROUP_SELECTOR = '[lottie-group]';
 
-    function readRange(el, index) {
+    // Returns [start, end] using the first two comma-separated values in lottie-range.
+    // Accepts 2+ values, so lottie-range="2,5,11.5" correctly gives [2, 5] on mobile.
+    function readRange(el) {
         const attr = el.getAttribute('lottie-range');
-        if (attr) {
-            const parts = attr.split(',').map((s) => parseFloat(s.trim()));
-            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                return parts;
-            }
+        if (!attr) return null;
+        const parts = attr.split(',').map((s) => parseFloat(s.trim()));
+        if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            return [parts[0], parts[1]];
         }
         return null;
     }
@@ -30,13 +32,16 @@ gsap.registerPlugin(ScrollTrigger);
         // Clear any pre-rendered SVG so Lottie has a clean container
         container.innerHTML = '';
 
+        const lottiePath = container.getAttribute('lottie-path');
+        if (!lottiePath) return;
+
         const anim = lottie.loadAnimation({
             container: container,
             renderer: 'svg',
             loop: false,
             autoplay: false,
             rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
-            path: LOTTIE_PATH,
+            path: lottiePath,
         });
 
         anim.addEventListener('DOMLoaded', () => {
@@ -79,28 +84,46 @@ gsap.registerPlugin(ScrollTrigger);
     const root = document.getElementById(SECTION_ID);
     if (!root) return;
 
-    // â”€â”€â”€ 1. Dynamic trigger spacer generation â”€â”€â”€
-    // Rule: N content wraps â†’ N-1 trigger spacers
+    // ——— 1. Dynamic trigger spacer generation ———
+    // Rule: N content wraps → N-1 trigger spacers.
+    // If no [trigger-group] elements exist in the HTML, spacers are created
+    // as plain divs inside .sticky_g_wrap (after the sticky content block).
     function generateTriggerSpacers() {
         const wraps = root.querySelectorAll('.sticky_content_wrap');
-        const existingTrigger = document.querySelector(TRIGGER_SELECTOR);
+        const existingTriggers = [...document.querySelectorAll(TRIGGER_SELECTOR)];
 
-        if (!existingTrigger || wraps.length < 2) return;
+        // Only one (or zero) content wraps — no spacers needed.
+        // Remove any default spacer that may already exist in the HTML.
+        if (wraps.length < 2) {
+            existingTriggers.forEach((el) => el.remove());
+            return;
+        }
 
         const triggerCount = wraps.length - 1;
-        const parent = existingTrigger.parentElement;
 
-        // Remove all existing trigger spacers first
-        parent.querySelectorAll(TRIGGER_SELECTOR).forEach((el) => el.remove());
+        // ── Case A: an existing [trigger-group] element is available as template
+        if (existingTriggers.length > 0) {
+            const parent = existingTriggers[0].parentElement;
+            existingTriggers.forEach((el) => el.remove());
+            for (let i = 0; i < triggerCount; i++) {
+                const spacer = existingTriggers[0].cloneNode(true);
+                parent.appendChild(spacer);
+            }
+            return;
+        }
 
-        // Clone the original trigger N-1 times
+        // ── Case B: no template — create minimal spacer divs inside .sticky_g_wrap
+        const gWrap = root.querySelector('.sticky_g_wrap');
+        if (!gWrap) return;
         for (let i = 0; i < triggerCount; i++) {
-            const spacer = existingTrigger.cloneNode(true);
-            parent.appendChild(spacer);
+            const spacer = document.createElement('div');
+            spacer.setAttribute('trigger-group', SECTION_ID);
+            spacer.style.cssText = 'height:100vh;width:100%;pointer-events:none;';
+            gWrap.appendChild(spacer);
         }
     }
 
-    // â”€â”€â”€ 2. Scroll-driven crossfade â”€â”€â”€
+    // ——— 2. Scroll-driven crossfade ———
     function initStickyScroll() {
         const wraps = root.querySelectorAll('.sticky_content_wrap');
         const triggers = document.querySelectorAll(TRIGGER_SELECTOR);
@@ -123,7 +146,7 @@ gsap.registerPlugin(ScrollTrigger);
             return right ? right.querySelector('.lottie_wrap') : null;
         };
 
-        // Set initial state â€” only first wrap visible
+        // Set initial state — only first wrap visible
         wraps.forEach((wrap, i) => {
             const targets = getTextTargets(wrap);
             if (targets.length) gsap.set(targets, { opacity: i === 0 ? 1 : 0 });
@@ -137,7 +160,7 @@ gsap.registerPlugin(ScrollTrigger);
             const currentText = getTextTargets(current);
             const nextText = getTextTargets(next);
 
-            // 1. Text crossfade â€” onEnter / onLeaveBack
+            // 1. Text crossfade — onEnter / onLeaveBack
             ScrollTrigger.create({
                 trigger: trigger,
                 start: 'top 90%',
@@ -181,10 +204,10 @@ gsap.registerPlugin(ScrollTrigger);
                 },
             });
 
-            // 2. Media parallax â€” scrubbed
+            // 2. Media parallax — scrubbed
             // Only run if both wraps have a non-empty media slot of their own.
             // The first wrap holds the Lottie (#battery-desktop-main), which is
-            // already scrubbed by the inline GSAP block â€” skip it to avoid
+            // already scrubbed by the inline GSAP block — skip it to avoid
             // transform conflicts.
             const currentMedia = getMediaTarget(current);
             const nextMedia = getMediaTarget(next);
@@ -206,7 +229,7 @@ gsap.registerPlugin(ScrollTrigger);
         });
     }
 
-    // â”€â”€â”€ 3. Heading word color split â”€â”€â”€
+    // ——— 3. Heading word color split ———
     function initHeadingColorSplit() {
         if (typeof SplitText === 'undefined') return;
 
@@ -300,16 +323,15 @@ gsap.registerPlugin(ScrollTrigger);
             });
         });
     }
-    // â”€â”€â”€ 4. Lottie scrub â€” intro + per-trigger time ranges â”€â”€â”€
-    // Values are SECONDS into the Lottie animation.
-    // INTRO scrubs while the #battery section is entering the viewport,
-    // before any spacer-trigger fires. RANGES has one entry per
-    // [trigger-group="battery"] spacer, in scroll order.
-    // The Lottie sits paused on the last played frame between ranges.
-    const LOTTIE_INTRO = [1, 5]; // section in view â†’ 1sâ€“5s
-    const LOTTIE_RANGES = [
-        [5, 11.2], // Trigger 1 → 5s–11.2s (zoom-out null starts at 11.27s / frame 338)
-    ];
+
+    // ——— 4. Lottie scrub — intro + per-trigger time ranges ———
+    function parseRange(el, attr) {
+        const raw = el && el.getAttribute(attr);
+        if (!raw) return null;
+        const parts = raw.split(',').map((s) => parseFloat(s.trim()));
+        if (parts.some(isNaN) || parts.length === 0) return null;
+        return parts;
+    }
 
     function initLottieScroll() {
         const lottieHost = root.querySelector('#battery-desktop-main');
@@ -318,55 +340,81 @@ gsap.registerPlugin(ScrollTrigger);
         // Wipe any pre-rendered SVG so Lottie has a clean container
         lottieHost.innerHTML = '';
 
+        const lottiePath = lottieHost.getAttribute('lottie-path');
+        if (!lottiePath) return;
+
+        // Array of checkpoint seconds: [introStart, introEnd, t1End, t2End, ...]
+        // 2 values  → intro only; triggers use their own lottie-range attributes.
+        // 3+ values → intro + all trigger ranges encoded in one place.
+        const sequence = parseRange(lottieHost, 'lottie-range');
+        if (!sequence || sequence.length < 2) return;
+        const LOTTIE_INTRO   = [sequence[0], sequence[1]];
+        // Pre-built per-trigger ranges derived from host (available when 3+ values)
+        const hostTriggerRanges = sequence.length > 2
+            ? sequence.slice(1).reduce((acc, v, i, arr) => {
+                if (i < arr.length - 1) acc.push([v, arr[i + 1]]);
+                return acc;
+              }, [])
+            : null;
+
         const anim = lottie.loadAnimation({
             container: lottieHost,
             renderer: 'svg',
             loop: false,
             autoplay: false,
             rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
-            path: 'https://cdn.prod.website-files.com/69f0584be4d9dcdc9451abc0/69f445228ba6615487b20bb5_Battery-v1.json',
+            path: lottiePath,
         });
 
         anim.addEventListener('DOMLoaded', () => {
-            anim.setSpeed(3); // Adjust this number to make it faster or slower (1 = normal speed, 2 = twice as fast, 3 = three times as fast)
+            anim.setSpeed(4);
 
             const total = anim.totalFrames - 1;
             const fps = anim.frameRate || 60;
             const triggers = document.querySelectorAll(TRIGGER_SELECTOR);
-            // seconds â†’ frame index (clamped to total)
+            // seconds → frame index (clamped to total)
             const resolve = (sec) => Math.min(sec * fps, total);
 
             const playRange = (trigger, range, scrollConfig, opts = {}) => {
-                const startFrame = resolve(range[0]);
+                // range is [start, end] or [null, end] (continuation)
+                const getStart = range[0] !== null
+                    ? () => resolve(range[0])
+                    : () => anim.currentFrame;
                 const endFrame = resolve(range[1]);
 
                 ScrollTrigger.create(Object.assign({
                     trigger: trigger,
-                    onEnter: () => anim.playSegments([startFrame, endFrame], true),
+                    onEnter: () => anim.playSegments([getStart(), endFrame], true),
                     // Only reverse if explicitly requested (intro shouldn't
                     // interrupt the main range mid-play)
                     ...(opts.reverseOnLeaveBack && {
-                        onLeaveBack: () => anim.playSegments([endFrame, startFrame], true),
+                        onLeaveBack: () => anim.playSegments([endFrame, getStart()], true),
                     }),
                 }, scrollConfig));
             };
 
             // Park on the intro's start frame
-            anim.goToAndStop(resolve(LOTTIE_INTRO[0]), true);
+            anim.goToAndStop(resolve(sequence[0]), true);
 
             // Intro: from when #battery enters the viewport until it pins.
-            // The spacer-triggers sit *after* the sticky content, so this
-            // window completes before LOTTIE_RANGES[0] begins.
-            // No reverseOnLeaveBack here — the intro reversing would
-            // force-interrupt the main [5→end] range if the user scrolls up.
             playRange(root, LOTTIE_INTRO, {
                 start: 'top center',
                 end: 'top top',
             }, { reverseOnLeaveBack: false });
 
-            // Per-spacer ranges
+            // Per-spacer ranges:
+            // If host had 3+ values, those pre-built ranges take priority.
+            // Otherwise each trigger spacer reads its own lottie-range attribute
+            // (use a single value for continuation, two values for explicit).
             triggers.forEach((trigger, i) => {
-                const range = LOTTIE_RANGES[i];
+                let range;
+                if (hostTriggerRanges) {
+                    range = hostTriggerRanges[i] ? [hostTriggerRanges[i][0], hostTriggerRanges[i][1]] : null;
+                } else {
+                    const raw = parseRange(trigger, 'lottie-range');
+                    if (!raw) return;
+                    range = raw.length === 1 ? [null, raw[0]] : [raw[0], raw[1]];
+                }
                 if (!range) return;
                 playRange(trigger, range, {
                     start: 'top 80%',
@@ -376,7 +424,7 @@ gsap.registerPlugin(ScrollTrigger);
         });
     }
 
-    // â”€â”€â”€ Init â”€â”€â”€
+    // ——— Init ———
     generateTriggerSpacers();
     initStickyScroll();
     initHeadingColorSplit();
