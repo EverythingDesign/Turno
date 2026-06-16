@@ -41,8 +41,33 @@
 })();
 
 
+// ─── ab-intro="1" — entrance animation on page load ───
+(function () {
+    if (typeof gsap === 'undefined') return;
+
+    const section = document.querySelector('[ab-intro="1"]');
+    if (!section) return;
+
+    const chars = section.querySelectorAll('.char');
+    if (!chars.length) return;
+
+    const startColor = '#ff4d17';
+    gsap.set(chars, { opacity: 0 });
+
+    // Small delay so the browser has painted the initial layout before animating
+    document.addEventListener('DOMContentLoaded', () => {
+        gsap.timeline({ delay: 0.3 }).to(chars, {
+            keyframes: [
+                { opacity: 1, color: startColor,   duration: 0.1, ease: 'power2.inOut' },
+                { color: 'currentColor',            duration: 0.1, ease: 'power2.inOut' },
+            ],
+            stagger: 0.03,
+        });
+    });
+})();
 
 // ─── ab-intro 2–5 — char-by-char colour reveal ───
+
 (function () {
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
     gsap.registerPlugin(ScrollTrigger);
