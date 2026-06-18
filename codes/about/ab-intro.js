@@ -52,7 +52,7 @@
     if (!chars.length) return;
 
     const startColor = '#ff4d17';
-    gsap.set(chars, { opacity: 0 });
+    gsap.set(chars, { opacity: 0.1 });
 
     // Small delay so the browser has painted the initial layout before animating
     document.addEventListener('DOMContentLoaded', () => {
@@ -86,6 +86,8 @@
             end: 'bottom center',
             scrub: true,
             animation: gsap.to(inner, { height: '100%', ease: 'none' }),
+            onEnter: () => { inner.style.animation = 'none'; },
+            onLeaveBack: () => { inner.style.animation = ''; },
         });
     })();
 
@@ -157,7 +159,7 @@
 
 
         // Hide all chars upfront
-        gsap.set(chars, { opacity: 0 });
+        gsap.set(chars, { opacity: 0.1 });
         if (n === 5) {
             const built = section.querySelector('[turno-built]');
             if (built) gsap.set(built, { yPercent: 5, opacity: 0 });
@@ -167,7 +169,7 @@
 
         const play = () => {
             if (tl) tl.kill();
-            gsap.set(chars, { opacity: 0 });
+            gsap.set(chars, { opacity: 0.1 });
 
             if (n === 5) {
                 // Section 5: fade in orange and stay orange, then reveal [turno-built]
@@ -203,7 +205,7 @@
 
         const reset = () => {
             if (tl) { tl.kill(); tl = null; }
-            gsap.set(chars, { opacity: 0 });
+            gsap.set(chars, { opacity: 0.1 });
             if (n === 5) {
                 const built = section.querySelector('[turno-built]');
                 if (built) gsap.set(built, { yPercent: 5, opacity: 0 });
