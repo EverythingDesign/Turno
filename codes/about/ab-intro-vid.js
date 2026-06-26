@@ -1,75 +1,105 @@
-
 // ─── ab-intro video popup ───
 // Opens .video-popup.is-active on [turno-built] click,
-// swaps the video src to the attribute value of [turno-built],
-// and closes on [close-video-popup] click.
-(function () {
-    const popup = document.querySelector('.video-popup');
-    const trigger = document.querySelector('[turno-built]');
-    if (!popup || !trigger) return;
+// swaps/injects the iframe from the attribute value of [turno-built],
+// and closes/pauses on [close-video-popup] click or Escape key.
+document.addEventListener('DOMContentLoaded', () => {
+    const embedContainer = document.querySelector('.home-hero-video-embed');
+    const videoPopup = document.querySelector('.video-popup');
 
-    const videoEl = popup.querySelector('video');
-    const source = videoEl && videoEl.querySelector('source');
+    if (!embedContainer || !videoPopup) return;
 
-    // Snapshot the original src so we can restore it on close
-    const originalSrc = source ? source.getAttribute('src') : null;
+    const triggers = document.querySelectorAll("[turno-built]");
+    triggers.forEach((trigger) => {
+        trigger?.addEventListener("click", () => {
+            const iframeHtml = trigger.getAttribute('turno-built');
+            if (iframeHtml) {
+                // Parse the new iframe
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = iframeHtml;
+                const newIframe = tempDiv.querySelector('iframe');
+                let newSrc = newIframe ? newIframe.getAttribute('src') : '';
 
-    // Try to find a Plyr instance bound to the video element
-    function getPlyr() {
-        return videoEl && videoEl._plyr ? videoEl._plyr : null;
-    }
+                // Ensure autoplay=1 is in the src URL
+                if (newIframe && newSrc && !newSrc.includes('autoplay=')) {
+                    newSrc += (newSrc.includes('?') ? '&' : '?') + 'autoplay=1';
+                    newIframe.setAttribute('src', newSrc);
+                }
 
-    function loadSrc(src) {
-        const plyr = getPlyr();
-        if (plyr && typeof plyr.source === 'object') {
-            // Plyr API: swap source
-            plyr.source = {
-                type: 'video',
-                sources: [{ src: src, type: 'video/mp4' }],
-            };
-        } else if (source && videoEl) {
-            // Fallback: update the <source> and reload
-            source.setAttribute('src', src);
-            videoEl.load();
-        }
-    }
+                const currentIframe = embedContainer.querySelector('iframe');
+                const currentSrc = currentIframe ? currentIframe.getAttribute('src') : '';
 
-    function openPopup() {
-        const src = trigger.getAttribute('turno-built');
-        if (!src) return;
-        loadSrc(src);
-        popup.classList.add('is-active');
-        document.body.style.overflow = 'hidden';
-    }
+                if (newSrc && currentIframe && currentSrc === newSrc) {
+                    // Same iframe, just play it
+                    currentIframe.contentWindow.postMessage(JSON.stringify({ method: 'play' }), '*');
+                } else {
+                    // Different iframe or none exists, append it
+                    if (newIframe) {
+                        // Force iframe to be 100% width and height of the container
+                        newIframe.setAttribute('width', '100%');
+                        newIframe.setAttribute('height', '100%');
+                        newIframe.style.width = '100%';
+                        newIframe.style.height = '100%';
+                    }
+                    embedContainer.innerHTML = tempDiv.innerHTML;
 
-    function closePopup() {
-        popup.classList.remove('is-active');
-        document.body.style.overflow = '';
+                    // Play the video when loaded as fallback
+                    const iframeEl = embedContainer.querySelector('iframe');
+                    if (iframeEl) {
+                        iframeEl.addEventListener('load', () => {
+                            iframeEl.contentWindow.postMessage(JSON.stringify({ method: 'play' }), '*');
+                        });
+                    }
+                }
 
-        // Pause video
-        const plyr = getPlyr();
-        if (plyr) {
-            plyr.pause();
-        } else if (videoEl) {
-            videoEl.pause();
-        }
+                // After that add .is-active to videoPopup and disable page scroll
+                if (!videoPopup.classList.contains("is-active")) {
+                    videoPopup.classList.add('is-active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        });
+    });
 
-        // Restore original src
-        if (originalSrc) loadSrc(originalSrc);
-    }
+    const closeVidBtns = document.querySelectorAll("[close-video-popup]");
 
-    // Open
-    trigger.addEventListener('click', openPopup);
-
-    // Close via any [close-video-popup] element
-    popup.querySelectorAll('[close-video-popup]').forEach(function (el) {
-        el.addEventListener('click', closePopup);
+    // Stop/pause video and reset popup state when close button clicked
+    closeVidBtns.forEach(closeVidBtn => {
+        closeVidBtn?.addEventListener('click', () => {
+            videoPopup.classList.remove('is-active');
+            document.body.style.overflow = '';
+            const iframe = embedContainer.querySelector('iframe');
+            if (iframe) {
+                iframe.contentWindow.postMessage(JSON.stringify({ method: 'pause' }), '*');
+            }
+        });
     });
 
     // Close on Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && popup.classList.contains('is-active')) {
-            closePopup();
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && videoPopup.classList.contains('is-active')) {
+            videoPopup.classList.remove('is-active');
+            document.body.style.overflow = '';
+            const iframe = embedContainer.querySelector('iframe');
+            if (iframe) {
+                iframe.contentWindow.postMessage(JSON.stringify({ method: 'pause' }), '*');
+            }
         }
     });
-})();
+
+    // Also pause the video/restore scroll if the popup's is-active class is removed by any other action
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class') {
+                const isActive = videoPopup.classList.contains('is-active');
+                if (!isActive) {
+                    document.body.style.overflow = '';
+                    const iframe = embedContainer.querySelector('iframe');
+                    if (iframe) {
+                        iframe.contentWindow.postMessage(JSON.stringify({ method: 'pause' }), '*');
+                    }
+                }
+            }
+        });
+    });
+    observer.observe(videoPopup, { attributes: true });
+});
